@@ -23,6 +23,7 @@
         "type": "https",
         "server": "1.1.1.1",
         "server_port": 443,
+        "detour": "自动选择",
         "path": "/dns-query",
         "domain_resolver": "dns_resolver"
       },
@@ -44,41 +45,36 @@
         "tag": "dns_resolver",
         "type": "udp",
         "server": "114.114.114.114"
+      },
+      {
+        "type": "local",
+        "tag": "local"
       }
     ],
     "rules": [
       {
         "action": "route",
         "clash_mode": "direct",
-        "server": "dns_direct",
-        "strategy": "prefer_ipv4"
+        "server": "dns_direct"
       },
       {
         "action": "route",
         "clash_mode": "global",
-        "server": "dns_proxy",
-        "strategy": "prefer_ipv4"
+        "server": "dns_proxy"
       },
       {
         "action": "route",
         "rule_set": "geosite-cn",
-        "server": "dns_direct",
-        "strategy": "prefer_ipv4"
-      },
-      {
-        "action": "route",
-        "rule_set": "geoip-cn",
-        "server": "dns_direct",
-        "strategy": "prefer_ipv4"
+        "server": "dns_direct"
       },
       {
         "action": "route",
         "rule_set": "geosite-geolocation-!cn",
-        "server": "dns_proxy",
-        "strategy": "prefer_ipv4"
+        "server": "dns_proxy"
       }
     ],
     "independent_cache": true,
+    "strategy": "prefer_ipv4",
     "final": "dns_direct"
   },
   "inbounds": [
@@ -90,17 +86,22 @@
         "172.18.0.1/30",
         "fdfe:dcba:9876::1/126"
       ],
+      "route_address": [
+        "0.0.0.0/1",
+        "128.0.0.0/1",
+        "::/1",
+        "8000::/1"
+      ],
+      "route_exclude_address": [
+        "192.168.0.0/16",
+        "10.0.0.0/8",
+        "172.16.0.0/12",
+        "fc00::/7"
+      ],
       "mtu": 9000,
       "auto_route": true,
       "strict_route": true,
-      "sniff": true,
-      "platform": {
-        "http_proxy": {
-          "enabled": true,
-          "server": "127.0.0.1",
-          "server_port": 1082
-        }
-      }
+      "sniff": true
     },
     {
       "type": "mixed",
@@ -108,12 +109,6 @@
       "listen_port": 1082,
       "sniff": true,
       "users": []
-    },
-    {
-      "type": "socks",
-      "tag": "socks-in",
-      "listen": "127.0.0.1",
-      "listen_port": 7888
     }
   ],
   "outbounds": [
@@ -355,6 +350,10 @@
       {
         "protocol": "dns",
         "action": "hijack-dns"
+      },
+      {
+        "ip_is_private": true,
+        "outbound": "direct"
       },
       {
         "clash_mode": "global",
